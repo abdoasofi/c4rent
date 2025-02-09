@@ -25,6 +25,8 @@
   "item_group",
   "section_break_ajnl",
   "item_group_html",
+  "section_break_owqs",
+  "item_html",
   "section_break_5",
   "time_logs",
   "working_hours",
@@ -268,6 +270,15 @@
    "fieldname": "item_group_html",
    "fieldtype": "HTML",
    "label": "Item Group HTML"
+  },
+  {
+   "fieldname": "section_break_owqs",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_html",
+   "fieldtype": "HTML",
+   "label": "Item HTML"
   }
  ],
  "icon": "fa fa-clock-o",
@@ -286,7 +297,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-09 14:49:57.910040",
+ "modified": "2025-02-09 15:11:52.113005",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
