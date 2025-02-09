@@ -6,7 +6,7 @@ import frappe
 from frappe.model.document import Document
 import datetime
 import json
-
+from frappe import _ 
 class Rent(Document):
 	@frappe.whitelist()
 	def before_validate(doc):
@@ -120,10 +120,43 @@ class Rent(Document):
 		# 	frappe.db.sql(f"""update `tabRent Detail` set returen_date = '{today()}'  where name = '{d.name}'""")
 		# 	frappe.db.sql(f"""update `tabRent Detail` set `tabRent Detail`.return_qty = {d.qty} where name = '{d.name}""")
 		# 	frappe.db.sql(f"""update `tabRent Detail` set `tabRent Detail`.return = 1 where name = '{d.name}""")
-            
+			
 		
 
 
 
 	def on_cancel(doc, method=None):
 		doc.ignore_linked_doctypes = ["Stock Entry"]
+  
+	@frappe.whitelist()
+	def get_item_group(self):
+		item_group = frappe.get_list("Item Group", fields=["name", "file_image"])
+		for ig in item_group:
+			if ig.file_image:
+				ig.file_image = frappe.utils.get_file_link(ig.file_image)
+		return item_group
+	
+
+	@frappe.whitelist()
+	def get_item_group_details(self, item_group):
+		"""
+		جلب تفاصيل Item Group على اسم الحزمة.
+
+		Args:
+		item_group اسم الحزمة.
+
+		"""
+		if not item_group:
+			return {}
+		
+		try:
+			item_group_doc = frappe.get_doc("Item Group", item_group)
+			return {
+				"name": item_group_doc.name,
+				"file_image": frappe.utils.get_file_link(item_group_doc.image),
+    			# item = frappe.get_doc('Item',doc.item_code )
+				# "custom_package_description": item_group_doc.custom_package_description
+			}
+		except Exception as e:
+			frappe.log_error(_("Item Group '{0}' not found. Error: {1}").format(item_group, str(e)), "get_package_details")
+			return {}

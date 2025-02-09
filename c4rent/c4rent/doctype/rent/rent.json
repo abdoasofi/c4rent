@@ -22,6 +22,9 @@
   "rent_type",
   "source_warehouse",
   "target_warehouse",
+  "item_group",
+  "section_break_ajnl",
+  "item_group_html",
   "section_break_5",
   "time_logs",
   "working_hours",
@@ -30,7 +33,6 @@
   "column_break_10",
   "price_per_day_or_month",
   "total_billed_amount",
-  "section_break_18",
   "tab_break_vmxo0",
   "status",
   "column_break_vpgj6",
@@ -139,11 +141,6 @@
    "options": "currency",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "section_break_18",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "tab_break_vmxo0",
@@ -255,6 +252,22 @@
    "fieldname": "return",
    "fieldtype": "Button",
    "label": "Return"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ajnl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_group_html",
+   "fieldtype": "HTML",
+   "label": "Item Group HTML"
   }
  ],
  "icon": "fa fa-clock-o",
@@ -273,7 +286,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2023-08-26 12:54:40.588577",
+ "modified": "2025-02-09 14:49:57.910040",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
