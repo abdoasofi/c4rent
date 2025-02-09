@@ -10,8 +10,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/c4rent/css/c4rent.css"
-# app_include_js = "/assets/c4rent/js/c4rent.js"
+app_include_css = "/assets/c4rent/css/swiper/swiper-bundle.min.css"
+app_include_js = "/assets/c4rent/js/swiper/swiper-bundle.min.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/c4rent/css/c4rent.css"
