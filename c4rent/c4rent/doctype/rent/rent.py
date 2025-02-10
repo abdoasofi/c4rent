@@ -117,7 +117,12 @@ class Rent(Document):
   
     @frappe.whitelist()
     def get_item_group(self):
-        item_group = frappe.get_list("Item Group", fields=["name", "file_image"])
+        item_group = frappe.get_list("Item Group",
+            fields=["name", "file_image"] ,
+            filters={
+            'in_slider': 1
+            }, 
+            )
         for ig in item_group:
             if ig.file_image:
                 ig.file_image = frappe.utils.get_file_link(ig.file_image)

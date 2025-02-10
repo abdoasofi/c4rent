@@ -411,57 +411,57 @@ function initialize_swiper(frm, read_only) {
         document.head.appendChild(style);
     } 
     }
-    function load_items(frm, item_group) {
-        if (!item_group) return; // تأكد من وجود مجموعة الأصناف
-    
-        frappe.call({
-            doc: frm.doc,
-            method: "get_items",
-            args: { item_group: item_group },
-            callback: function(response) {
-                const items = response.message;
-                const container = frm.get_field('item_html').$wrapper;
-    
-                // إعداد بنية HTML للسلايدر
-                container.html(`
-                    <div class="swiper-container">
-                        <div class="swiper-wrapper" id="item-container"></div>
-                        <div class="swiper-button-next"></div>
-                        <div class="swiper-button-prev"></div>
-                        <div class="swiper-pagination"></div>
-                    </div>
-                `);
-    
-                const itemContainer = container.find('#item-container');
-    
-                if (items && items.length) {
-                    items.forEach(function(item) {
-                        const slide = `
-                            <div class="swiper-slide">
-                                <div class="card">
-                                    <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top" alt="${item.item_name}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${item.item_name}</h5>
-                                        <button data-item_code="${item.name}" class="btn btn-success select_item">اختيار العنصر</button>
-                                    </div>
+function load_items(frm, item_group) {
+    if (!item_group) return; // تأكد من وجود مجموعة الأصناف
+
+    frappe.call({
+        doc: frm.doc,
+        method: "get_items",
+        args: { item_group: item_group },
+        callback: function(response) {
+            const items = response.message;
+            const container = frm.get_field('item_html').$wrapper;
+
+            // إعداد بنية HTML للسلايدر
+            container.html(`
+                <div class="swiper-container">
+                    <div class="swiper-wrapper" id="item-container"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            `);
+
+            const itemContainer = container.find('#item-container');
+
+            if (items && items.length) {
+                items.forEach(function(item) {
+                    const slide = `
+                        <div class="swiper-slide">
+                            <div class="card">
+                                <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top" alt="${item.item_name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${item.item_name}</h5>
+                                    <button data-item_code="${item.name}" class="btn btn-success select_item">اختيار العنصر</button>
                                 </div>
                             </div>
-                        `;
-                        itemContainer.append(slide);
-                    });
-    
-                    // تهيئة سلايدر العناصر
-                    initialize_item_slider(container);
-                } else {
-                    itemContainer.html("<p>لا توجد عناصر مرتبطة بمجموعة الأصناف المختارة.</p>");
-                }
-            },
-            error: function(error) {
-                console.error("Error loading items: ", error);
-                frm.get_field('item_html').$wrapper.html("<p>حدث خطأ أثناء جلب العناصر.</p>");
+                        </div>
+                    `;
+                    itemContainer.append(slide);
+                });
+
+                // تهيئة سلايدر العناصر
+                initialize_item_slider(container);
+            } else {
+                itemContainer.html("<p>لا توجد عناصر مرتبطة بمجموعة الأصناف المختارة.</p>");
             }
-        });
-    }
+        },
+        error: function(error) {
+            console.error("Error loading items: ", error);
+            frm.get_field('item_html').$wrapper.html("<p>حدث خطأ أثناء جلب العناصر.</p>");
+        }
+    });
+}
 // تهيئة سلايدر العناصر
 function initialize_item_slider(container) {
     const swiperContainer = container.find('.swiper-container')[0];
