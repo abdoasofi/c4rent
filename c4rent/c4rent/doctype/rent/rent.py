@@ -114,18 +114,19 @@ class Rent(Document):
 
     def on_cancel(self):
         self.ignore_linked_doctypes = ["Stock Entry"]
-  
+        
     @frappe.whitelist()
     def get_item_group(self):
         item_group = frappe.get_list("Item Group",
-            fields=["name", "file_image"] ,
+            fields=["name", "image"],
             filters={
-            'in_slider': 1
-            }, 
-            )
+                'in_slider': 1
+            },
+        )
         for ig in item_group:
-            if ig.file_image:
-                ig.file_image = frappe.utils.get_file_link(ig.file_image)
+            if ig.image:
+                # Assuming ig.image contains the file path
+                ig.image = f"{frappe.utils.get_url()}/{ig.image}"  # Constructing the full image link
         return item_group
     
     @frappe.whitelist()
@@ -149,8 +150,12 @@ class Rent(Document):
             return []
 
         try:
-            items = frappe.get_all('Item', fields=['name', 'item_name'], filters={'item_group': item_group})
-            return items
+            items = frappe.get_all('Item', fields=['name', 'item_name','image'], filters={'item_group': item_group})
+            for i in items:
+                if i.image:
+                    # Assuming i.image contains the file path
+                    i.image = f"{frappe.utils.get_url()}/{i.image}"  # Constructing the full image link
+                return items
         except Exception as e:
             frappe.log_error(_("Error fetching items for Item Group '{0}'. Error: {1}").format(item_group, str(e)), "get_items")
             return []

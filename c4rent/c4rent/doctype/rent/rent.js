@@ -180,7 +180,7 @@ function load_item_group(frm) {
                         callback: function(res) {
                             if (res.message) {
                                 let ig = res.message;
-                                let image_src = ig.file_image ? frappe.utils.get_file_link(ig.file_image) : '/assets/your_app/images/default.png';
+                                let image_src = ig.image ? frappe.utils.get_file_link(ig.image) : '/assets/your_app/images/default.png';
 
                                 const slide = `
                                     <div class="swiper-slide">
@@ -207,7 +207,7 @@ function load_item_group(frm) {
                     }
 
                     r.message.forEach(ig => {
-                        let image_src = ig.file_image ? frappe.utils.get_file_link(ig.file_image) : '/assets/your_app/images/default.png';
+                        let image_src = ig.image ? frappe.utils.get_file_link(ig.image) : '/assets/your_app/images/default.png';
 
                         const slide = `
                             <div class="swiper-slide">
