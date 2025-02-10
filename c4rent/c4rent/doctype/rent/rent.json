@@ -22,12 +22,11 @@
   "rent_type",
   "source_warehouse",
   "target_warehouse",
-  "item_group",
   "section_break_ajnl",
   "item_group_html",
-  "section_break_owqs",
-  "item_html",
+  "item_group",
   "section_break_5",
+  "item_html",
   "time_logs",
   "working_hours",
   "total_qty",
@@ -118,7 +117,8 @@
   },
   {
    "fieldname": "section_break_5",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Items"
   },
   {
    "fieldname": "time_logs",
@@ -264,16 +264,13 @@
   },
   {
    "fieldname": "section_break_ajnl",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Item Group"
   },
   {
    "fieldname": "item_group_html",
    "fieldtype": "HTML",
    "label": "Item Group HTML"
-  },
-  {
-   "fieldname": "section_break_owqs",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "item_html",
@@ -297,7 +294,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-09 15:11:52.113005",
+ "modified": "2025-02-10 15:39:08.075877",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
