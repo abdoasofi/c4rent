@@ -4,8 +4,10 @@
 frappe.ui.form.on('Rent', {
     refresh: function(frm) {
         initialize_slider(frm);
-        
-        
+        if (frm.doc.item_group) {
+            load_items(frm, frm.doc.item_group);
+        }
+
     },
     item_group: function(frm) {
         load_items(frm,frm.doc.item_group); // Load items based on the selected item group
@@ -128,6 +130,10 @@ frappe.ui.form.on("Rent Detail", "item_code", function(frm, cdt, cdn) {
     });
     cur_frm.refresh_field('time_logs');
 });
+
+//----------------------------------------------------------------------------------
+// سلايدر مجموعات الأصناف
+//----------------------------------------------------------------------------------
 
 function initialize_slider(frm) {
     let html_field = frm.get_field('item_group_html');
@@ -274,10 +280,9 @@ function initialize_swiper(frm, read_only) {
             if (itemGroupName) {
                 frm.set_value('item_group', itemGroupName);
                 
-                // طلب حفظ المستند بعد تعيين القيمة
                 frm.save().then(() => {
                     frappe.msgprint(__("تم اختيار : " + itemGroupName + " وتم حفظ المستند بنجاح."));
-                    load_item_group(frm); // إعادة تحميل مجموعة الأصناف بعد الحفظ
+                    load_item_group(frm);
                 }).catch(err => {
                     console.error("خطأ في حفظ المستند: ", err);
                     frappe.msgprint(__("حدث خطأ أثناء حفظ المستند."));
@@ -411,8 +416,13 @@ function initialize_swiper(frm, read_only) {
         document.head.appendChild(style);
     } 
     }
+
+//----------------------------------------------------------------------------------
+// سلايدر الأصناف
+//----------------------------------------------------------------------------------
+
 function load_items(frm, item_group) {
-    if (!item_group) return; // تأكد من وجود مجموعة الأصناف
+    if (!item_group) return;
 
     frappe.call({
         doc: frm.doc,
@@ -451,7 +461,7 @@ function load_items(frm, item_group) {
                 });
 
                 // تهيئة سلايدر العناصر
-                initialize_item_slider(container);
+                initialize_item_slider(frm ,container);
             } else {
                 itemContainer.html("<p>لا توجد عناصر مرتبطة بمجموعة الأصناف المختارة.</p>");
             }
@@ -463,10 +473,9 @@ function load_items(frm, item_group) {
     });
 }
 // تهيئة سلايدر العناصر
-function initialize_item_slider(container) {
+function initialize_item_slider(frm, container) {
     const swiperContainer = container.find('.swiper-container')[0];
 
-    // تهيئة السلايدر
     const swiper = new Swiper(swiperContainer, {
         slidesPerView: 1,
         spaceBetween: 30,
@@ -488,20 +497,100 @@ function initialize_item_slider(container) {
         },
     });
 
-    // إضافة حدث النقر للزر "اختيار العنصر"
-    container.find('.select_item').on('click', function() {
-        const itemCode = $(this).data('item_code');
-        if (itemCode) {
-            // إضافة الوظائف الإضافية كما هو مطلوب
-            console.log("تم اختيار العنصر: ", itemCode);
-            frappe.msgprint(__("تم اختيار العنصر: " + itemCode));
-        }
-    });
+    container.find('.select_item').on('click', (function(current_frm) { // Create a closure
+        return function() {
+            const itemCode = $(this).data('item_code');
+
+            if (itemCode) {
+                add_item_to_table(current_frm, itemCode); // Use the captured 'current_frm'
+            }
+        };
+    })(frm)); // Immediately invoke the function, passing 'frm'
 }
 
-function make_slider_readonly(frm) {
-    // إعادة تحميل السلايدر ليعرض الحزمة المختارة فقط وتعطيل التنقل
-    load_item_group(frm);
-    
+//----------------------------------------------------------------------------------
+// Add item to sub-table
+//----------------------------------------------------------------------------------
 
+function add_item_to_table(frm, item_code) {
+    const priceList = frm.doc.rent_type === "Daily" ? "Daily" : "Monthly"; 
+    frappe.call({
+        method: 'frappe.client.get',
+        args: {
+            doctype: 'Item',
+            name: item_code
+        },
+        callback: function(item_response) {
+            const item_details = item_response.message;
+
+            if (item_details) {
+                frappe.call({
+                    method: 'frappe.client.get_value',
+                    args: {
+                        doctype: 'Item Price',
+                        filters: {
+                            item_code: item_details.name,
+                            price_list: priceList
+                        },
+                        fieldname: 'price_list_rate'
+                    },
+                    callback: function(price_response) {
+                        const price = price_response.message ? price_response.message.price_list_rate : 0;
+
+                        let item_found = false;
+                        let row_name = null; 
+
+                        // Search for existing item in the table and store the row name if found
+                        frm.doc.time_logs.forEach(function(log) {
+                            if (log.item_code === item_details.name) {
+                                item_found = true;
+                                row_name = log.name;
+                            }
+                        });
+
+                        if (item_found && row_name) {
+                            // Get the existing row by name to update it
+                            frappe.model.set_value(
+                                'Rent Detail', row_name, 'qty',
+                                frappe.model.get_value('Rent Detail', row_name, 'qty') + 1
+                            );
+
+                            frappe.model.set_value(
+                                'Rent Detail', row_name, 'amount',
+                                frappe.model.get_value('Rent Detail', row_name, 'qty') * price
+                            );
+                        } else {
+                            // Add a new row if the item is not found
+                            const new_row = frm.add_child('time_logs');
+                            new_row.item_code = item_details.name;
+                            new_row.item_name = item_details.item_name;
+                            new_row.rate = price;
+                            new_row.qty = 1;
+                            new_row.amount = new_row.qty * new_row.rate;
+                        }
+
+                        // Refresh the field to show updated data
+                        frm.refresh_field('time_logs');
+
+                        // Save the form
+                        frm.save_or_update().then(() => {
+                            frappe.msgprint(__('تم حفظ التغييرات بنجاح.'));
+                        }).catch(err => {
+                            frappe.msgprint(__('حدث خطأ أثناء حفظ التغييرات.'));
+                        });
+                    },
+                    error: function(err) {
+                        console.error("Error fetching item price: ", err);
+                        frappe.msgprint(__('Could not fetch item price.'));
+                    }
+                });
+            } else {
+                frappe.msgprint(__('Item not found or invalid item code.'));
+            }
+        },
+        error: function(err) {
+            console.error("Error fetching item details: ", err);
+            frappe.msgprint(__('Could not fetch item details.'));
+        }
+    });
 }
