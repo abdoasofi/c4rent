@@ -32,8 +32,8 @@ class Rent(Document):
 		# 		x.rate = frappe.db.get_value('Item Price', {"item_code": x.item_code, "selling" : 1,"price_list": "Monthly"}, 'price_list_rate') or 0
 		# 		x.income_account = frappe.db.get_single_value('Company', 'default_income_account')
 
-    @frappe.whitelist()
     def on_submit(self):
+        # إنشاء Stock Entry
         new_doc = frappe.get_doc({
             'doctype': 'Stock Entry',
             'transaction_date': self.date,
@@ -55,6 +55,10 @@ class Rent(Document):
             UPDATE tabRent SET stock_entry = '{new_doc.name}' WHERE name = '{self.name}'
         """)
 
+        # تحديث حالة Rent إلى "Submitted"
+        self.db_set('status', 'Submitted')
+
+        # إنشاء Sales Invoice إذا كان نوع الإيجار شهريًا
         if self.rent_type == "Monthly":
             new_invoice = frappe.get_doc({
                 'doctype': 'Sales Invoice',
@@ -92,7 +96,7 @@ class Rent(Document):
             auto_repeat_doc = frappe.get_doc("Auto Repeat", auto_repeat.name)
             auto_repeat_doc.disabled = 1
             auto_repeat_doc.save()
-        frappe.db.sql(f"""UPDATE tabRent SET status = "Returned" WHERE name = '{self.name}'""")
+        #frappe.db.sql(f"""UPDATE tabRent SET status = "Returned" WHERE name = '{self.name}'""")
         new_doc = frappe.get_doc({
             'doctype': 'Stock Entry',
             'transaction_date': self.date,
@@ -114,7 +118,6 @@ class Rent(Document):
 
     def on_cancel(self):
         self.ignore_linked_doctypes = ["Stock Entry"]
-        
     @frappe.whitelist()
     def get_item_group(self):
         item_group = frappe.get_list("Item Group",
@@ -128,12 +131,12 @@ class Rent(Document):
                 # Assuming ig.image contains the file path
                 ig.image = f"{frappe.utils.get_url()}/{ig.image}"  # Constructing the full image link
         return item_group
-    
+
     @frappe.whitelist()
     def get_item_group_details(self, item_group):
         if not item_group:
             return {}
-        
+
         try:
             item_group_doc = frappe.get_doc("Item Group", item_group)
             return {
