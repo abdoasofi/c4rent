@@ -241,15 +241,15 @@ function initialize_swiper(frm, read_only) {
     }
 
     html_field.swiper_instance = new Swiper(swiperElement, {
-        slidesPerView: 1,
+        slidesPerView: 3,
         spaceBetween: 30,
-        effect: 'cube',
-        cubeEffect: {
-            shadow: true,
-            slideShadows: true,
-            shadowOffset: 20,
-            shadowScale: 0.94,
-        },
+        // effect: 'cube',
+        // cubeEffect: {
+        //     shadow: true,
+        //     slideShadows: true,
+        //     shadowOffset: 20,
+        //     shadowScale: 0.94,
+        // },
         loop: !read_only,
         pagination: {
             el: html_field.$wrapper.find('.swiper-pagination')[0],
@@ -303,7 +303,7 @@ function initialize_swiper(frm, read_only) {
                 max-width: 400px; /* أقصى عرض للبطاقة */
                 height: 100%; /* استخدام 100% لضمان التناسب */
                 min-height: 450px; /* ارتفاع أدنى */
-                border: none;
+                border: 4px solid #7E546F;
                 border-radius: 15px; 
                 overflow: hidden;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -333,28 +333,31 @@ function initialize_swiper(frm, read_only) {
             .card-title {
                 font-family: 'Arial', sans-serif;
                 font-size: 1.5rem; /* حجم أكبر للعناوين */
-                color: #333;
+                color: #7E546F;;
                 margin-bottom: 10px;
             }
             .card-text {
                 font-size: 1rem;
-                color: #666;
+                color: #7E546F;
                 flex-grow: 1;
             }
             .selected_item_group {
                 width: 100%;
                 margin-top: 20px;
-                background-color: #28a745; 
+                background-color: #7E546F; 
                 color: white;
                 border: none;
                 border-radius: 5px; 
                 padding: 10px;
+                color:rgb(233, 218, 228);;
                 transition: background-color 0.3s; 
                 font-weight: bold; 
                 cursor: pointer;
             }
             .selected_item_group:hover {
-                background-color: #218838; 
+                background-color:rgb(124, 56, 100); 
+                color:rgb(233, 218, 228);;
+
             }
             .swiper-container {
                 width: 100%;
@@ -367,17 +370,25 @@ function initialize_swiper(frm, read_only) {
                 align-items: center;
             }
             .swiper-button-next {
-            background-color: #00b64a00;
+            color:#7E546F;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             }
             .swiper-button-prev {
-            background-color: #00b64a00;
+            color:#7E546F;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             }  
+            .swiper-pagination-bullet {
+                background: #ddd; /* لون النقاط غير النشطة */
+                opacity: 1; /* تأكد من أنها مرئية */
+            }
+
+            .swiper-pagination-bullet-active {
+                background: #7E546F; /* لون النقطة النشطة */
+            }
             /* تحسين التجاوب */
             @media (max-width: 768px) {
                 .card {
@@ -447,16 +458,16 @@ function load_items(frm, item_group) {
             if (items && items.length) {
                 items.forEach(function(item) {
                     const slide = `
-                        <div class="swiper-slide">
-                            <div class="card">
-                                <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top" alt="${item.item_name}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${item.item_name}</h5>
-                                    <button data-item_code="${item.name}" class="btn btn-success select_item">اختيار العنصر</button>
-                                </div>
+                    <div class="swiper-slide">
+                        <div class="card">
+                            <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top" alt="${item.item_name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${item.item_name}</h5>
+                                <button data-item_code="${item.name}" class="btn btn-success select_item" style="background-color: #7E546F; border-color: #7E546F; color: white;">اختيار العنصر</button>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
                     itemContainer.append(slide);
                 });
 
@@ -477,15 +488,15 @@ function initialize_item_slider(frm, container) {
     const swiperContainer = container.find('.swiper-container')[0];
 
     const swiper = new Swiper(swiperContainer, {
-        slidesPerView: 1,
-        spaceBetween: 30,
-        effect: 'cube',
-        cubeEffect: {
-            shadow: true,
-            slideShadows: true,
-            shadowOffset: 20,
-            shadowScale: 0.94,
-        },
+        slidesPerView: 5,
+        // spaceBetween: 30,
+        // effect: 'cube',
+        // cubeEffect: {
+        //     shadow: true,
+        //     slideShadows: true,
+        //     shadowOffset: 20,
+        //     shadowScale: 0.94,
+        // },
         loop: false,
         pagination: {
             el: container.find('.swiper-pagination')[0],
@@ -505,7 +516,7 @@ function initialize_item_slider(frm, container) {
                 add_item_to_table(current_frm, itemCode); // Use the captured 'current_frm'
             }
         };
-    })(frm)); // Immediately invoke the function, passing 'frm'
+    })(frm));
 }
 
 //----------------------------------------------------------------------------------
