@@ -28,7 +28,9 @@ app_include_js = "/assets/c4rent/js/swiper/swiper-bundle.min.js"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+# doctype_js = {
+#     "Sales Invoice" : "public/js/sales_invoice.js"
+#     }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -115,20 +117,18 @@ app_include_js = "/assets/c4rent/js/swiper/swiper-bundle.min.js"
 # Override standard doctype classes
 
 # override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
+# 	"Sales Invoice": "custom_app.overrides.CustomToDo"
 # }
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
-# }
+doc_events = {
+    "Sales Invoice": {
+        "on_submit": "c4rent.c4rent.doc_events.sales_invoice.on_submit"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
@@ -219,3 +219,11 @@ app_include_js = "/assets/c4rent/js/swiper/swiper-bundle.min.js"
 # auth_hooks = [
 #	"c4rent.auth.validate"
 # ]
+fixtures = [
+    {
+        "doctype": "Client Script",
+        "filters": [
+            ["name", "in", ["Rent", "Daily inv"]]
+        ]
+    },
+]

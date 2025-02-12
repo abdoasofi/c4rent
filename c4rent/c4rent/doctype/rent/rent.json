@@ -150,13 +150,14 @@
    "label": "Information"
   },
   {
+   "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Status",
    "no_copy": 1,
-   "options": "Draft\nSubmitted\nReturned\nBilled\nCompleted\nCancelled",
+   "options": "Draft\nSubmitted\nReturned\nPartial Returned\nBilled\nCompleted\nCancelled",
    "read_only": 1
   },
   {
@@ -294,7 +295,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-10 15:39:08.075877",
+ "modified": "2025-02-12 10:49:41.461836",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
@@ -377,6 +378,10 @@
   {
    "color": "Green",
    "title": "Returned"
+  },
+  {
+   "color": "Orange",
+   "title": "Partial Returned"
   }
  ],
  "title_field": "customer"

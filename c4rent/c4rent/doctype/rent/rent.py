@@ -9,8 +9,11 @@ from frappe import _
 
 class Rent(Document):
 
-    @frappe.whitelist()
     def before_validate(self):
+        """
+        يتم استدعاؤها قبل التحقق من صحة المستند.
+        تقوم بحساب الكمية الإجمالية والمبلغ الإجمالي من Time Logs.
+        """
         tot_qty = 0
         tot_amt = 0
         for d in self.time_logs:
@@ -20,8 +23,11 @@ class Rent(Document):
         self.total_qty = tot_qty
         self.price_per_day_or_month = tot_amt
 
-    @frappe.whitelist()
     def validate(self):
+        """
+        يتم استدعاؤها للتحقق من صحة المستند.
+        يمكنك إضافة قواعد التحقق هنا.
+        """
         pass
     	# if doc.rent_type == "Daily" and doc.is_new():
 		# 	for x in doc.time_logs:
@@ -33,6 +39,10 @@ class Rent(Document):
 		# 		x.income_account = frappe.db.get_single_value('Company', 'default_income_account')
 
     def on_submit(self):
+        """
+        يتم استدعاؤها عند اعتماد المستند.
+        تقوم بإنشاء Stock Entry و Sales Invoice (إذا كان نوع الإيجار شهريًا).
+        """
         # إنشاء Stock Entry
         new_doc = frappe.get_doc({
             'doctype': 'Stock Entry',
@@ -88,6 +98,9 @@ class Rent(Document):
 
     @frappe.whitelist()
     def stop_auto_repeat(self):
+        """
+        يتم استدعاؤها لإيقاف التكرار التلقائي للفواتير.
+        """
         auto_repeat_list = frappe.get_list(
             "Auto Repeat",
             filters={"reference_document": self.sales_invoice}
@@ -117,9 +130,15 @@ class Rent(Document):
         self.reload()
 
     def on_cancel(self):
+        """
+        يتم استدعاؤها عند إلغاء المستند.
+        """
         self.ignore_linked_doctypes = ["Stock Entry"]
     @frappe.whitelist()
     def get_item_group(self):
+        """
+        يتم استدعاؤها للحصول على مجموعات الأصناف.
+        """
         item_group = frappe.get_list("Item Group",
             fields=["name", "image"],
             filters={
@@ -128,12 +147,14 @@ class Rent(Document):
         )
         for ig in item_group:
             if ig.image:
-                # Assuming ig.image contains the file path
-                ig.image = f"{frappe.utils.get_url()}/{ig.image}"  # Constructing the full image link
+                ig.image = f"{frappe.utils.get_url()}/{ig.image}"
         return item_group
 
     @frappe.whitelist()
     def get_item_group_details(self, item_group):
+        """
+        يتم استدعاؤها للحصول على تفاصيل مجموعة الأصناف.
+        """
         if not item_group:
             return {}
 
@@ -149,6 +170,9 @@ class Rent(Document):
 
     @frappe.whitelist()
     def get_items(self, item_group):
+        """
+        يتم استدعاؤها للحصول على الأصناف المرتبطة بمجموعة الأصناف.
+        """
         if not item_group:
             return []
 
@@ -156,8 +180,7 @@ class Rent(Document):
             items = frappe.get_all('Item', fields=['name', 'item_name','image'], filters={'item_group': item_group})
             for i in items:
                 if i.image:
-                    # Assuming i.image contains the file path
-                    i.image = f"{frappe.utils.get_url()}/{i.image}"  # Constructing the full image link
+                    i.image = f"{frappe.utils.get_url()}/{i.image}"
                 return items
         except Exception as e:
             frappe.log_error(_("Error fetching items for Item Group '{0}'. Error: {1}").format(item_group, str(e)), "get_items")

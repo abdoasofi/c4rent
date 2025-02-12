@@ -7,11 +7,30 @@ frappe.ui.form.on('Rent', {
         if (frm.doc.item_group) {
             load_items(frm, frm.doc.item_group);
         }
-
     },
     item_group: function(frm) {
         load_items(frm,frm.doc.item_group); // Load items based on the selected item group
-    }
+    },
+    onload: function (frm) {
+        setTimeout(() => {
+          const stockEntryButton = document.querySelector('.document-link[data-doctype="Stock Entry"] .btn-new');
+          if (stockEntryButton) {
+              stockEntryButton.style.display = 'none';
+            }
+        }, 500);   
+        setTimeout(() => {
+            const paymentEntryButton = document.querySelector('.document-link[data-doctype="Payment Entry"] .btn-new');
+            if (paymentEntryButton) {
+                paymentEntryButton.style.display = 'none';
+              }
+          }, 500);       
+          setTimeout(() => {
+            const salesInvoiceButton = document.querySelector('.document-link[data-doctype="Sales Invoice"] .btn-new');
+            if (salesInvoiceButton) {
+                salesInvoiceButton.style.display = 'none';
+              }
+          }, 500);                 
+    },
 });
 
 frappe.ui.form.on("Rent", {
@@ -65,70 +84,37 @@ frappe.ui.form.on("Rent", "validate", function(frm, cdt, cdn) {
     $.each(frm.doc.time_logs || [], function(i, d) {
         d.source_warehouse = frm.doc.source_warehouse;
     });
-// frappe.ui.form.on('Rent Detail',"qty", function(frm, cdt, cdn) {
-//     $.each(frm.doc.time_logs || [], function(i, d) {
-
-//          d.amount = d.qty * d.rate;
-
-//     });
-// });
-
-// frappe.ui.form.on("Rent", {
-// validate:function(frm, cdt, cdn){
-// var dw = locals[cdt][cdn];
-// var total = 0;
-// var total2 = 0;
-
-// frm.doc.time_logs.forEach(function(dw) { total += dw.qty; });
-// frm.set_value("total_qty", total);
-// refresh_field("total_qty");
-
-// frm.doc.time_logs.forEach(function(dw) { total2 += dw.amount; });
-// frm.set_value("price_per_day_or_month", total2);
-// refresh_field("price_per_day_or_month");
-// }, });
-    frm.refresh_field('time_logs');
+    cur_frm.refresh_field('time_logs');
 });
 
-frappe.ui.form.on("Rent", "validate", function(frm, cdt, cdn) {
-    $.each(frm.doc.time_logs || [], function(i, d) {
-        frappe.call({
-            'method': 'frappe.client.get_value',
-            'args': {
-                'doctype': 'Bin',
-                'fieldname': 'actual_qty',
-                'filters': {
-                    'item_code': d.item_code,
-                    "warehouse": cur_frm.doc.source_warehouse
-                }
-            },
-            callback: function(r) {
-                d.actual_qty = r.message.actual_qty;
-            }
-        });
-    });
-});
-
+// Modified the following 'item_code' event to correctly update the rate field in the 'Rent Detail' table.
 frappe.ui.form.on("Rent Detail", "item_code", function(frm, cdt, cdn) {
+    const row = locals[cdt][cdn]; // Get current row
     const priceList = cur_frm.doc.rent_type == "Daily" ? "Daily" : "Monthly";
-    $.each(frm.doc.time_logs || [], function(i, d) {
+
+    if (row.item_code) {
         frappe.call({
             'method': 'frappe.client.get_value',
             'args': {
                 'doctype': 'Item Price',
                 'fieldname': 'price_list_rate',
                 'filters': {
-                    'item_code': d.item_code,
+                    'item_code': row.item_code,
                     "price_list": priceList
                 }
             },
             callback: function(r) {
-                d.rate = r.message.price_list_rate;
-                cur_frm.refresh_field('rate');
+                if (r.message) {
+                    frappe.model.set_value(cdt, cdn, 'rate', r.message.price_list_rate); // Set the rate
+                    frappe.model.set_value(cdt, cdn, 'amount', r.message.price_list_rate * row.qty); // Calculate and set amount
+                } else {
+                    frappe.model.set_value(cdt, cdn, 'rate', 0); // Set rate to 0 if no price found
+                    frappe.model.set_value(cdt, cdn, 'amount', 0); // Set amount to 0 if no price found
+                }
+                cur_frm.refresh_field('time_logs');
             }
         });
-    });
-    cur_frm.refresh_field('time_logs');
+    }
 });
 
 //----------------------------------------------------------------------------------
@@ -185,10 +171,10 @@ function load_item_group(frm) {
                                 const slide = `
                                     <div class="swiper-slide">
                                         <div class="card">
-                                            <img src="${image_src}" class="card-img-top" alt="${ig.name}">
+                                            <img src="${image_src}" class="card-img-top fixed-image select_item_group_image" data-item_group="${ig.name}" alt="${ig.name}" style="width: 100%; object-fit: contain; cursor: pointer;">
                                             <div class="card-body">
                                                 <h5 class="card-title">${ig.name}</h5>
-                                                <button class="btn btn-success" disabled>تم اختيار مجموعة الاصناف</button>
+
                                             </div>
                                         </div>
                                     </div>
@@ -212,10 +198,10 @@ function load_item_group(frm) {
                         const slide = `
                             <div class="swiper-slide">
                                 <div class="card">
-                                    <img src="${image_src}" class="card-img-top" alt="${ig.name}">
+                                    <img src="${image_src}" class="card-img-top fixed-image select_item_group_image" data-item_group="${ig.name}" alt="${ig.name}" style="width: 100%; object-fit: contain; cursor: pointer;">
                                     <div class="card-body">
                                         <h5 class="card-title">${ig.name}</h5>
-                                        <button class="btn selected_item_group" data-item_group="${ig.name}">اختار مجموعة الاصناف</button>
+
                                     </div>
                                 </div>
                             </div>
@@ -241,16 +227,9 @@ function initialize_swiper(frm, read_only) {
     }
 
     html_field.swiper_instance = new Swiper(swiperElement, {
-        slidesPerView: 3,
-        spaceBetween: 30,
-        // effect: 'cube',
-        // cubeEffect: {
-        //     shadow: true,
-        //     slideShadows: true,
-        //     shadowOffset: 20,
-        //     shadowScale: 0.94,
-        // },
-        loop: !read_only,
+        slidesPerView: 1,
+        spaceBetween: 5,
+        loop: false,
         pagination: {
             el: html_field.$wrapper.find('.swiper-pagination')[0],
             clickable: true,
@@ -268,165 +247,228 @@ function initialize_swiper(frm, read_only) {
             invert: false,
             enabled: !read_only,
         },
+        // width: html_field.$wrapper.find('.swiper-container').width(),
+		breakpoints: {
+            320: {slidesPerView: 1,},
+            450: {slidesPerView: 2,},
+            480: {slidesPerView: 3,},
+            640: {slidesPerView: 4,},
+            992: {slidesPerView: 5,},
+            1300: {slidesPerView: 6,},
+            1600: {slidesPerView: 7,}            
+        }
     });
+    html_field.$wrapper.find('.select_item_group_image').on('click', function() {
+        const itemGroupName = $(this).data('item_group');
+        if (itemGroupName) {
+            frm.set_value('item_group', itemGroupName);
 
+            frm.save().then(() => {
+                frappe.msgprint(__("تم اختيار : " + itemGroupName + " وتم حفظ المستند بنجاح."));
+                load_item_group(frm);
+                load_items(frm, itemGroupName); // Load items after selecting an item group
+            }).catch(err => {
+                console.error("خطأ في حفظ المستند: ", err);
+                frappe.msgprint(__("حدث خطأ أثناء حفظ المستند."));
+            });
+        } else {
+            console.error("لا يوجد قيمة لاسم مجموعة الأصناف");
+        }
+    });
     if (read_only) {
         html_field.$wrapper.find('.swiper-button-next, .swiper-button-prev').hide();
     } else {
-        html_field.$wrapper.find('.swiper-button-next, .swiper-button-prev').show();
-
-        html_field.$wrapper.find('.selected_item_group').on('click', function() {
-            const itemGroupName = $(this).data('item_group');
-            if (itemGroupName) {
-                frm.set_value('item_group', itemGroupName);
-                
-                frm.save().then(() => {
-                    frappe.msgprint(__("تم اختيار : " + itemGroupName + " وتم حفظ المستند بنجاح."));
-                    load_item_group(frm);
-                }).catch(err => {
-                    console.error("خطأ في حفظ المستند: ", err);
-                    frappe.msgprint(__("حدث خطأ أثناء حفظ المستند."));
-                });
-            } else {
-                console.error("لا يوجد قيمة لاسم مجموعة الأصناف");
-            }
-        });
+        html_field.$wrapper.find('.selected_item_group').remove();
     }
 
     if (!document.getElementById('slider-styles')) {
         let style = document.createElement('style');
         style.id = 'slider-styles';
         style.innerHTML = `
-            /* توحيد مقاسات البطاقات */
+        /* Default Slider Styles (Applied to all screen sizes) */
+        .card {
+            width: 100%;
+            max-width: 180px;
+            height: auto;
+            min-height: auto;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #fff;
+            margin: 5px; /* Add some margin between cards */
+            box-sizing: border-box; /* Important: Include padding/border in width */
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card img.fixed-image {
+            width: 100%;
+            height: 90px;
+            object-fit: contain;
+            border-bottom: 1px solid #E0E0E0;
+            object-position: center;
+        }
+
+        .card-body {
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            text-align: center;
+            height: auto;
+        }
+
+        .card-title {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.8rem;
+            color: #333;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-text {
+            font-size: 0.75rem;
+            color: #666;
+            flex-grow: 1;
+        }
+
+        .selected_item_group {
+            width: 80%;
+            margin-top: 8px;
+            background-color: #7E546F;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .selected_item_group:hover {
+            background-color: #388E3C;
+        }
+
+        .swiper-container {
+            width: 100%;
+            overflow: hidden;
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
+        .swiper-pagination {
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px; /* Add padding to the slides */
+            box-sizing: border-box; /*  Include padding and border */
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: #7E546F;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            transition: all 0.3s;
+        }
+
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            color: #7E546F;
+        }
+
+        .swiper-pagination-bullet {
+            background: rgb(236, 209, 227);
+            opacity: 1;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: #7E546F;
+        }
+
+        /*  Media Queries for Responsive Design */
+        @media (max-width: 1200px) {
             .card {
-                width: 100%; /* استخدام 100% ضمن السلايدر */
-                max-width: 400px; /* أقصى عرض للبطاقة */
-                height: 100%; /* استخدام 100% لضمان التناسب */
-                min-height: 450px; /* ارتفاع أدنى */
-                border: 4px solid #7E546F;
-                border-radius: 15px; 
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                transition: transform 0.3s, box-shadow 0.3s;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+                max-width: 28%; /* Slightly more space */
+                margin: 3px;  /* Reduce margin a bit */
             }
-            .card:hover {
-                transform: scale(1.05); 
-                box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 992px) {
+            .card {
+                max-width: 45%; /*  Two cards per row */
+                margin: 3px;
             }
-            .card img {
-                width: 100%;
-                height: 60%; 
-                object-fit: cover; 
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                max-width: 48%; /*  Allow for spacing between cards */
+                margin: 2px; /* Even smaller margins */
             }
-            .card-body {
-                padding: 15px;
-                flex-grow: 1; 
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                text-align: center;
+
+            .card img.fixed-image {
+                height: 75px; /* Slightly smaller image */
             }
+
             .card-title {
-                font-family: 'Arial', sans-serif;
-                font-size: 1.5rem; /* حجم أكبر للعناوين */
-                color: #7E546F;;
-                margin-bottom: 10px;
+                font-size: 0.7rem; /* Smaller text */
             }
-            .card-text {
-                font-size: 1rem;
-                color: #7E546F;
-                flex-grow: 1;
-            }
-            .selected_item_group {
-                width: 100%;
-                margin-top: 20px;
-                background-color: #7E546F; 
-                color: white;
-                border: none;
-                border-radius: 5px; 
-                padding: 10px;
-                color:rgb(233, 218, 228);;
-                transition: background-color 0.3s; 
-                font-weight: bold; 
-                cursor: pointer;
-            }
-            .selected_item_group:hover {
-                background-color:rgb(124, 56, 100); 
-                color:rgb(233, 218, 228);;
+        }
 
+        @media (max-width: 576px) {
+            .card {
+                max-width: 95%; /* Almost full width */
+                margin: 5px auto; /* Center and add some top/bottom margin */
             }
+
+            .card img.fixed-image {
+                height: 90px; /*  Increase image height on mobile */
+            }
+
+            .card-title {
+                font-size: 0.8rem;
+            }
+
             .swiper-container {
-                width: 100%;
-                padding-top: 20px;
-                padding-bottom: 50px;
+                padding: 0 5px; /* Keep some padding */
             }
-            .swiper-slide {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            .swiper-button-next {
-            color:#7E546F;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            }
-            .swiper-button-prev {
-            color:#7E546F;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            }  
-            .swiper-pagination-bullet {
-                background: #ddd; /* لون النقاط غير النشطة */
-                opacity: 1; /* تأكد من أنها مرئية */
+        }
+
+        /* Landscape Orientation Adjustments (Optional) */
+        @media (orientation: landscape) and (max-height: 480px) {
+            .card img.fixed-image {
+                height: 60px; /* Smaller images in landscape on small screens */
             }
 
-            .swiper-pagination-bullet-active {
-                background: #7E546F; /* لون النقطة النشطة */
+            .card-title {
+                font-size: 0.65rem;
             }
-            /* تحسين التجاوب */
-            @media (max-width: 768px) {
-                .card {
-                    max-width: 90%;
-                    min-height: 400px;
-                }
-                .card-title {
-                    font-size: 1.3rem;
-                }
-                .card-text {
-                    font-size: 0.95rem;
-                }
-                .selected_item_group {
-                    padding: 8px;
-                    margin-top: 15px;
-                }
-            }
+        }
 
-            @media (max-width: 480px) {
-                .card {
-                    max-width: 100%;
-                    min-height: 350px;
-                }
-                .card-title {
-                    font-size: 1.1rem;
-                }
-                .card-text {
-                    font-size: 0.9rem;
-                }
-                .selected_item_group {
-                    padding: 6px;
-                    margin-top: 10px;
-                }
-            }
         `;
         document.head.appendChild(style);
-    } 
     }
+}
 
 //----------------------------------------------------------------------------------
 // سلايدر الأصناف
@@ -460,10 +502,10 @@ function load_items(frm, item_group) {
                     const slide = `
                     <div class="swiper-slide">
                         <div class="card">
-                            <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top" alt="${item.item_name}">
+                            <img src="${item.image || '/assets/your_app/images/default.png'}" class="card-img-top fixed-image select_item_image" data-item_code="${item.name}" alt="${item.item_name}" style="width: 100%; object-fit: contain; cursor: pointer;">
                             <div class="card-body">
                                 <h5 class="card-title">${item.item_name}</h5>
-                                <button data-item_code="${item.name}" class="btn btn-success select_item" style="background-color: #7E546F; border-color: #7E546F; color: white;">اختيار العنصر</button>
+
                             </div>
                         </div>
                     </div>
@@ -488,15 +530,8 @@ function initialize_item_slider(frm, container) {
     const swiperContainer = container.find('.swiper-container')[0];
 
     const swiper = new Swiper(swiperContainer, {
-        slidesPerView: 5,
-        // spaceBetween: 30,
-        // effect: 'cube',
-        // cubeEffect: {
-        //     shadow: true,
-        //     slideShadows: true,
-        //     shadowOffset: 20,
-        //     shadowScale: 0.94,
-        // },
+        slidesPerView: 1,
+        spaceBetween: 5,
         loop: false,
         pagination: {
             el: container.find('.swiper-pagination')[0],
@@ -506,9 +541,18 @@ function initialize_item_slider(frm, container) {
             nextEl: container.find('.swiper-button-next')[0],
             prevEl: container.find('.swiper-button-prev')[0],
         },
+		breakpoints: {
+            320: {slidesPerView: 1,},
+            450: {slidesPerView: 2,},
+            480: {slidesPerView: 3,},
+            640: {slidesPerView: 4,},
+            992: {slidesPerView: 5,},
+            1300: {slidesPerView: 6,},
+            1600: {slidesPerView: 7,}            
+        }
     });
 
-    container.find('.select_item').on('click', (function(current_frm) { // Create a closure
+    container.find('.select_item_image').on('click', (function(current_frm) { // Create a closure
         return function() {
             const itemCode = $(this).data('item_code');
 
@@ -517,6 +561,8 @@ function initialize_item_slider(frm, container) {
             }
         };
     })(frm));
+
+    container.find('.select_item').remove();
 }
 
 //----------------------------------------------------------------------------------
@@ -524,7 +570,7 @@ function initialize_item_slider(frm, container) {
 //----------------------------------------------------------------------------------
 
 function add_item_to_table(frm, item_code) {
-    const priceList = frm.doc.rent_type === "Daily" ? "Daily" : "Monthly"; 
+    const priceList = frm.doc.rent_type === "Daily" ? "Daily" : "Monthly";
     frappe.call({
         method: 'frappe.client.get',
         args: {
@@ -549,26 +595,29 @@ function add_item_to_table(frm, item_code) {
                         const price = price_response.message ? price_response.message.price_list_rate : 0;
 
                         let item_found = false;
-                        let row_name = null; 
+                        let row_name = null;
 
                         // Search for existing item in the table and store the row name if found
-                        frm.doc.time_logs.forEach(function(log) {
+                        for (let i = 0; i < frm.doc.time_logs.length; i++) {  // Use a for loop for better control
+                            const log = frm.doc.time_logs[i];
                             if (log.item_code === item_details.name) {
                                 item_found = true;
                                 row_name = log.name;
+                                break; // Exit loop once found
                             }
-                        });
+                        }
 
                         if (item_found && row_name) {
                             // Get the existing row by name to update it
+                            const current_qty = frappe.model.get_value('Rent Detail', row_name, 'qty');
+                            const new_qty = current_qty + 1;
+
                             frappe.model.set_value(
-                                'Rent Detail', row_name, 'qty',
-                                frappe.model.get_value('Rent Detail', row_name, 'qty') + 1
+                                'Rent Detail', row_name, 'qty', new_qty
                             );
 
                             frappe.model.set_value(
-                                'Rent Detail', row_name, 'amount',
-                                frappe.model.get_value('Rent Detail', row_name, 'qty') * price
+                                'Rent Detail', row_name, 'amount', new_qty * price
                             );
                         } else {
                             // Add a new row if the item is not found
