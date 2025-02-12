@@ -20,6 +20,7 @@ def on_submit(doc, method):
         try:
             rent_doc = frappe.get_doc("Rent", doc.rent)
             update_rent_status(rent_doc, doc)
+            create_stock_entry(doc)
         except frappe.DoesNotExistError:
             frappe.msgprint(_("Rent document {} does not exist.").format(doc.rent), raise_exception=True)
     else:
@@ -92,3 +93,28 @@ def update_rent_status(rent_doc, sales_invoice_doc):
         pass
 
     rent_doc.save()
+    
+
+def create_stock_entry(doc):
+    """
+    يتم استدعاؤها عند اعتماد المستند.
+    تقوم بإنشاء Stock Entry.
+    """
+    # إنشاء Stock Entry
+    new_doc = frappe.get_doc({
+        'doctype': 'Stock Entry',
+        'transaction_date': doc.posting_date,
+        'stock_entry_type': 'Material Transfer',
+        'customer': doc.customer,
+        'rent': doc.rent,
+        'from_warehouse': doc.from_warehouse,
+        'to_warehouse': doc.to_warehouse,
+    })
+    for d in doc.items:
+        new = new_doc.append("items", {})
+        new.item_code = d.item_code
+        new.item_name = d.item_name
+        new.qty = d.qty
+        new.customer = doc.customer
+    new_doc.insert(ignore_permissions=True)
+    new_doc.submit()

@@ -9,22 +9,16 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "title",
-  "naming_series",
-  "company",
   "customer",
-  "customer_name",
-  "mobile_no",
-  "stock_entry",
-  "sales_invoice",
+  "title",
   "column_break_3",
+  "customer_name",
+  "naming_series",
+  "column_break_expo",
   "date",
-  "rent_type",
-  "source_warehouse",
-  "target_warehouse",
+  "company",
   "section_break_ajnl",
   "item_group_html",
-  "item_group",
   "section_break_5",
   "item_html",
   "time_logs",
@@ -39,6 +33,15 @@
   "column_break_vpgj6",
   "location",
   "cost_center",
+  "section_break_raer",
+  "mobile_no",
+  "rent_type",
+  "item_group",
+  "column_break_xmyy",
+  "stock_entry",
+  "sales_invoice",
+  "source_warehouse",
+  "target_warehouse",
   "section_break_5qhcf",
   "note",
   "terms_tab",
@@ -124,8 +127,7 @@
    "fieldname": "time_logs",
    "fieldtype": "Table",
    "label": "Time Sheets",
-   "options": "Rent Detail",
-   "reqd": 1
+   "options": "Rent Detail"
   },
   {
    "fieldname": "working_hours",
@@ -277,6 +279,18 @@
    "fieldname": "item_html",
    "fieldtype": "HTML",
    "label": "Item HTML"
+  },
+  {
+   "fieldname": "column_break_expo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_raer",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_xmyy",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-clock-o",
@@ -295,7 +309,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-12 10:49:41.461836",
+ "modified": "2025-02-13 00:19:05.973864",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",

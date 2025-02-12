@@ -12,6 +12,10 @@ frappe.ui.form.on('Rent', {
         load_items(frm,frm.doc.item_group); // Load items based on the selected item group
     },
     onload: function (frm) {
+        initialize_slider(frm);
+        if (frm.doc.item_group) {
+            load_items(frm, frm.doc.item_group);
+        }
         setTimeout(() => {
           const stockEntryButton = document.querySelector('.document-link[data-doctype="Stock Entry"] .btn-new');
           if (stockEntryButton) {
