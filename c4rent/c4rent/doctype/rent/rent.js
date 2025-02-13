@@ -268,7 +268,6 @@ function initialize_swiper(frm, read_only) {
             frm.set_value('item_group', itemGroupName);
 
             frm.save().then(() => {
-                frappe.msgprint(__("تم اختيار : " + itemGroupName + " وتم حفظ المستند بنجاح."));
                 load_item_group(frm);
                 load_items(frm, itemGroupName); // Load items after selecting an item group
             }).catch(err => {
