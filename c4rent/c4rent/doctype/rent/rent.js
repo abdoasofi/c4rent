@@ -124,7 +124,6 @@ frappe.ui.form.on("Rent Detail", "item_code", function(frm, cdt, cdn) {
 //----------------------------------------------------------------------------------
 // سلايدر مجموعات الأصناف
 //----------------------------------------------------------------------------------
-
 function initialize_slider(frm) {
     let html_field = frm.get_field('item_group_html');
     if (!html_field || html_field.slider_initialized) return;
@@ -476,7 +475,6 @@ function initialize_swiper(frm, read_only) {
 //----------------------------------------------------------------------------------
 // سلايدر الأصناف
 //----------------------------------------------------------------------------------
-
 function load_items(frm, item_group) {
     if (!item_group) return;
 
@@ -571,7 +569,6 @@ function initialize_item_slider(frm, container) {
 //----------------------------------------------------------------------------------
 // Add item to sub-table
 //----------------------------------------------------------------------------------
-
 function add_item_to_table(frm, item_code) {
     const priceList = frm.doc.rent_type === "Daily" ? "Daily" : "Monthly";
     frappe.call({

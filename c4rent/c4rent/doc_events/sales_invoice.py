@@ -48,7 +48,7 @@ def update_rent_status(rent_doc, sales_invoice_doc):
     # استرجاع الأصناف والكميات من الفواتير السابقة في استعلام واحد
     previous_invoices = frappe.get_all(
         "Sales Invoice Item",
-        fields=["item_code", "qty"],
+        fields=["item_code", "rent_qty"],
         filters={
             "parenttype": "Sales Invoice",
             "parent": ["in", frappe.get_all(
@@ -61,11 +61,11 @@ def update_rent_status(rent_doc, sales_invoice_doc):
 
     # تجميع الأصناف والكميات من الفواتير السابقة
     for item in previous_invoices:
-        expected_items[item.item_code] += item.qty
+        expected_items[item.item_code] += item.rent_qty
 
     # تجميع الأصناف والكميات من الفاتورة الحالية
     for item in sales_invoice_doc.items:
-        actual_items[item.item_code] += item.qty
+        actual_items[item.item_code] += item.rent_qty
 
     is_returned = True
     is_partial_returned = False
@@ -84,9 +84,9 @@ def update_rent_status(rent_doc, sales_invoice_doc):
                 break  # إذا تم إرجاع صنف واحد على الأقل، فهو إرجاع جزئي
 
     if is_returned:
-        rent_doc.status =  RENT_STATUS_PARTIAL_RETURNED
+        rent_doc.status =  RENT_STATUS_RETURNED
     elif is_partial_returned:
-        rent_doc.status = RENT_STATUS_RETURNED
+        rent_doc.status =  RENT_STATUS_PARTIAL_RETURNED
     else:
         # يمكنك هنا إضافة حالة افتراضية إذا لم يتم إرجاع كل أو جزء من الأصناف
         # rent_doc.status = "Some Other Status"
@@ -114,7 +114,7 @@ def create_stock_entry(doc):
         new = new_doc.append("items", {})
         new.item_code = d.item_code
         new.item_name = d.item_name
-        new.qty = d.qty
+        new.qty = d.rent_qty
         new.customer = doc.customer
     new_doc.insert(ignore_permissions=True)
     new_doc.submit()
