@@ -223,7 +223,7 @@ fixtures = [
     {
         "doctype": "Client Script",
         "filters": [
-            ["name", "in", ["Rent", "Daily inv"]]
+            ["name", "in", ["Rent"]]
         ]
     },
 ]

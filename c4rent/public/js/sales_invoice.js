@@ -1,8 +1,11 @@
 frappe.ui.form.on("Sales Invoice", {
     onload: function(frm) {
-        if(frm.doc.rent) {
+        if (frm.doc.__islocal && cur_frm.doc.selling_price_list == "Daily"){
+            if(frm.doc.rent) {
             check_remaining_quantities(frm);
+            }
         }
+
     },
     
     validate: function(frm) {
