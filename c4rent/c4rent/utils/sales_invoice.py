@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import flt
+import json
 
 @frappe.whitelist()
 def get_remaining_quantities(rent):
@@ -11,7 +12,7 @@ def get_remaining_quantities(rent):
     
     # حساب الكميات المسلمة
     delivered_items = frappe.db.sql("""
-        SELECT item_code, SUM(qty) as total_qty
+        SELECT item_code, SUM(rent_qty) as total_qty
         FROM `tabSales Invoice Item`
         WHERE rent_detail IN %(rent_details)s
         AND docstatus = 1
@@ -40,16 +41,26 @@ def get_remaining_quantities(rent):
 
 @frappe.whitelist()
 def validate_quantities(rent, items):
+    items = json.loads(items)  # Parse the JSON string into a list of dictionaries
     remaining = get_remaining_quantities(rent)
-    remaining_map = {d.item_code: d.remaining_qty for d in remaining['remaining_items']}
-    
+    remaining_map = {d['item_code']: d['remaining_qty'] for d in remaining['remaining_items']}
+
+    # Get available item codes
+    available_item_codes = set(remaining_map.keys())
+
     for item in items:
+        item_code = item['item_code']
         requested = flt(item.get('qty'))
         if item.get('selling_price_list') == "Daily":
             requested = flt(item.get('rent_qty')) * flt(item.get('days'))
-        
-        if requested > remaining_map.get(item['item_code'], 0):
-            frappe.msgprint(_(f"الكمية المطلوبة لـ {item['item_code']} تتجاوز الكمية المتبقية"))
+
+        # Check if the item exists in the available items
+        if item_code not in available_item_codes:
+            frappe.msgprint(_(f"الصنف {item_code} غير متاح للإيجار."))
             return {'is_valid': False}
-    
+            
+        if requested > remaining_map.get(item_code, 0):
+            # frappe.msgprint(_(f"الكمية المطلوبة لـ {item_code} تتجاوز الكمية المتبقية"))
+            return {'is_valid': False}
+
     return {'is_valid': True}
