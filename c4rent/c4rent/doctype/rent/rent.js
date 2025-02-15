@@ -602,35 +602,30 @@ function add_item_to_table(frm, item_code) {
                         fieldname: 'price_list_rate'
                     },
                     callback: function(price_response) {
-                        const price = price_response.message ? price_response.message.price_list_rate : 0;
+                        // Handle null/undefined price_list_rate
+                        const price = (price_response.message && price_response.message.price_list_rate) ? price_response.message.price_list_rate : 0;
 
                         let item_found = false;
                         let row_name = null;
 
-                        // Search for existing item in the table and store the row name if found
-                        for (let i = 0; i < frm.doc.time_logs.length; i++) {  // Use a for loop for better control
+                        // Check existing items
+                        for (let i = 0; i < frm.doc.time_logs.length; i++) {
                             const log = frm.doc.time_logs[i];
                             if (log.item_code === item_details.name) {
                                 item_found = true;
                                 row_name = log.name;
-                                break; // Exit loop once found
+                                break;
                             }
                         }
 
                         if (item_found && row_name) {
-                            // Get the existing row by name to update it
+                            // Update existing row
                             const current_qty = frappe.model.get_value('Rent Detail', row_name, 'qty');
                             const new_qty = current_qty + 1;
-
-                            frappe.model.set_value(
-                                'Rent Detail', row_name, 'qty', new_qty
-                            );
-
-                            frappe.model.set_value(
-                                'Rent Detail', row_name, 'amount', new_qty * price
-                            );
+                            frappe.model.set_value('Rent Detail', row_name, 'qty', new_qty);
+                            frappe.model.set_value('Rent Detail', row_name, 'amount', new_qty * price);
                         } else {
-                            // Add a new row if the item is not found
+                            // Add new row with validated rate
                             const new_row = frm.add_child('time_logs');
                             new_row.item_code = item_details.name;
                             new_row.item_name = item_details.item_name;
@@ -639,10 +634,7 @@ function add_item_to_table(frm, item_code) {
                             new_row.amount = new_row.qty * new_row.rate;
                         }
 
-                        // Refresh the field to show updated data
                         frm.refresh_field('time_logs');
-
-                        // Save the form
                         frm.save_or_update().then(() => {
                             frappe.msgprint(__('تم حفظ التغييرات بنجاح.'));
                         }).catch(err => {

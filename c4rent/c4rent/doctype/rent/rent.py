@@ -11,12 +11,15 @@ class Rent(Document):
 
     def before_validate(self):
         """
-        يتم استدعاؤها قبل التحقق من صحة المستند.
-        تقوم بحساب الكمية الإجمالية والمبلغ الإجمالي من Time Logs.
+        Calculate total quantity and amount from time logs.
+        Convert None rates to 0 to prevent calculation errors.
         """
         tot_qty = 0
         tot_amt = 0
         for d in self.time_logs:
+            # Ensure rate is not None; default to 0
+            if d.rate is None:
+                d.rate = 0
             d.amount = d.qty * d.rate
             tot_qty += d.qty
             tot_amt += d.amount
