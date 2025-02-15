@@ -40,18 +40,28 @@ frappe.ui.form.on('Rent', {
 frappe.ui.form.on("Rent", {
     refresh: function(frm, cdt, cdn) {
         if (frm.doc.docstatus == 1) {
-            frm.add_custom_button(__("Sales Invoice"), function() {
-                frappe.route_options = {
-                    "rent": frm.doc.name,
-                    "customer": frm.doc.customer,
-                    "branch": frm.doc.branch,
-                    "cost_center": frm.doc.cost_center,
-                    "from_warehouse": frm.doc.target_warehouse,
-                    "to_warehouse": frm.doc.source_warehouse,
-                    "selling_price_list": "Daily"
-                };
-                frappe.new_doc("Sales Invoice");
-            }, __("Create"));
+            if (frm.doc.status === "Returned") {
+                // Disable the button and show a message
+                // frm.disable_save(); // Prevents accidental saving while disabled
+                frm.add_custom_button(__("Sales Invoice"), function() {
+                    frappe.throw(__("This Rent document has been fully returned. Creating a Sales Invoice is not possible."));
+                }, __("Create")).addClass("btn-disabled"); // Add a class to visually disable the button
+            } else {
+                // Enable the button if the status is not "Returned"
+                frm.enable_save(); // Re-enable saving
+                frm.add_custom_button(__("Sales Invoice"), function() {
+                    frappe.route_options = {
+                        "rent": frm.doc.name,
+                        "customer": frm.doc.customer,
+                        "branch": frm.doc.branch,
+                        "cost_center": frm.doc.cost_center,
+                        "from_warehouse": frm.doc.target_warehouse,
+                        "to_warehouse": frm.doc.source_warehouse,
+                        "selling_price_list": "Daily"
+                    };
+                    frappe.new_doc("Sales Invoice");
+                }, __("Create"));
+            }
         }
     }
 });
