@@ -114,5 +114,6 @@ def create_stock_entry(doc):
         new.item_name = d.item_name
         new.qty = d.rent_qty
         new.customer = doc.customer
+        new.cost_center = doc.cost_center
     new_doc.insert(ignore_permissions=True)
     new_doc.submit()
