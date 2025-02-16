@@ -61,7 +61,7 @@ class Rent(Document):
             new.item_code = d.item_code
             new.item_name = d.item_name
             new.qty = d.qty
-            new.qty = self.cost_center
+            new.cost_center = self.cost_center
             new.customer = self.customer
         new_doc.insert(ignore_permissions=True)
         new_doc.submit()
