@@ -214,7 +214,6 @@
    "read_only": 1
   },
   {
-   "default": "\u0639\u0645\u0644\u0627\u0621 - EA",
    "fieldname": "target_warehouse",
    "fieldtype": "Link",
    "label": "Target Warehouse",
@@ -309,7 +308,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-13 00:19:05.973864",
+ "modified": "2025-02-16 23:19:43.846280",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
