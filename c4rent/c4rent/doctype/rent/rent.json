@@ -301,14 +301,14 @@
   },
   {
    "link_doctype": "Payment Entry",
-   "link_fieldname": "reference_name"
+   "link_fieldname": "rent"
   },
   {
    "link_doctype": "Stock Entry",
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-16 23:19:43.846280",
+ "modified": "2025-02-17 12:52:32.949533",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
