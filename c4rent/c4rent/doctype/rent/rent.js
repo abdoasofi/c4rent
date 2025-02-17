@@ -88,25 +88,19 @@ frappe.ui.form.on("Rent", {
                     frappe.new_doc("Sales Invoice");
                 }, __("Create"));
             }
-        }
-    }
-});
-
-frappe.ui.form.on("Rent", {
-    refresh: function(frm, cdt, cdn) {
-        if (frm.doc.docstatus == 1) {
+            // Add the Payment Entry button
             frm.add_custom_button(__("Payment Entry"), function() {
-                frappe.route_options = {
-                    "payment_type": "Receive",
-                    "party_type": "Customer",
-                    "party": frm.doc.customer,
-                };
-                frappe.new_doc("Payment Entry");
-            }, __("Create"));
+                frm.events.make_payment_entry(frm)
+            }, __("Create"));            
         }
-    }
+    },
+    make_payment_entry: function(frm) {
+		frappe.model.open_mapped_doc({
+			method: "c4rent.c4rent.doctype.rent.rent.make_payment_entry",
+			frm: frm
+		});
+	},
 });
-
 frappe.ui.form.on("Rent", "validate", function() {
     for (var i = 0; i < cur_frm.doc.time_logs.length; i++) {
         cur_frm.doc.time_logs[i].uom = cur_frm.doc.rent_type;
