@@ -27,7 +27,10 @@ def on_submit(doc, method):
         # يمكنك اختيارياً طباعة رسالة هنا إذا كان عدم وجود Rent أمرًا غير متوقع
         # frappe.msgprint(_("Rent is not linked to this Sales Invoice."))
         pass
-
+def on_update_after_submit(doc, method):
+    rent_doc = frappe.get_doc("Rent", doc.rent)
+    rent_doc.sales_invoice_status = doc.status
+    rent_doc.save()
 def update_rent_status(rent_doc, sales_invoice_doc):
     """
     تقوم بالتحقق من الأصناف والكميات في فاتورة المبيعات
@@ -90,7 +93,7 @@ def update_rent_status(rent_doc, sales_invoice_doc):
         rent_doc.status = RENT_STATUS_RETURNED
     elif is_partial_returned:
         rent_doc.status = RENT_STATUS_PARTIAL_RETURNED
-
+    rent_doc.sales_invoice = sales_invoice_doc.name
     rent_doc.save()
 def create_stock_entry(doc):
     """

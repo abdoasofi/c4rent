@@ -12,6 +12,7 @@ frappe.ui.form.on('Rent', {
         load_items(frm,frm.doc.item_group); // Load items based on the selected item group
     },
     onload: function (frm) {
+        update_sales_invoice_status(frm);
         // استخدام دالة غير متزامنة لجلب القيمة
         frappe.db.get_single_value('Rent Settings', 'default_target_warehouse')
             .then(defaultTargetWarehouse => {
@@ -150,7 +151,25 @@ frappe.ui.form.on("Rent Detail", "item_code", function(frm, cdt, cdn) {
         });
     }
 });
-
+function update_sales_invoice_status(frm) {
+    if (frm.doc.sales_invoice) {
+        // جلب حالة الفاتورة باستخدام Promise
+        frappe.db.get_value('Sales Invoice', 
+            frm.doc.sales_invoice, 
+            'status'
+        ).then(r => {
+            if (r.message && r.message.status) {
+                frm.set_value('sales_invoice_status', r.message.status);
+                frm.refresh_field('sales_invoice_status');
+            }
+        }).catch(() => {
+            console.error('Error fetching invoice status');
+        });
+    } else {
+        frm.set_value('sales_invoice_status', 'غير مرتبط بفاتورة');
+        frm.refresh_field('sales_invoice_status');
+    }
+}
 //----------------------------------------------------------------------------------
 // سلايدر مجموعات الأصناف
 //----------------------------------------------------------------------------------

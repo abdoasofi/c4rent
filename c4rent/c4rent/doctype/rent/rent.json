@@ -40,6 +40,7 @@
   "column_break_xmyy",
   "stock_entry",
   "sales_invoice",
+  "sales_invoice_status",
   "source_warehouse",
   "target_warehouse",
   "section_break_5qhcf",
@@ -246,11 +247,11 @@
    "options": "Warehouse"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_invoice",
    "fieldtype": "Link",
    "label": "Sales Invoice",
-   "options": "Sales Invoice",
-   "read_only": 1
+   "options": "Sales Invoice"
   },
   {
    "fieldname": "return",
@@ -290,6 +291,14 @@
   {
    "fieldname": "column_break_xmyy",
    "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "sales_invoice.status",
+   "fieldname": "sales_invoice_status",
+   "fieldtype": "Data",
+   "label": "Sales Invoice Status",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-clock-o",
@@ -308,7 +317,7 @@
    "link_fieldname": "rent"
   }
  ],
- "modified": "2025-02-17 12:52:32.949533",
+ "modified": "2025-03-09 03:01:55.315529",
  "modified_by": "Administrator",
  "module": "C4Rent",
  "name": "Rent",
