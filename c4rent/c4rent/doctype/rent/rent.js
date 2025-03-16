@@ -3,10 +3,13 @@
 
 frappe.ui.form.on('Rent', {
     refresh: function(frm) {
-        initialize_slider(frm);
-        if (frm.doc.item_group) {
-            load_items(frm, frm.doc.item_group);
+        if (frm.doc.docstatus != 1) {
+            initialize_slider(frm);
+            if (frm.doc.item_group) {
+                load_items(frm, frm.doc.item_group);
+            }
         }
+
     },
     item_group: function(frm) {
         load_items(frm,frm.doc.item_group); // Load items based on the selected item group
